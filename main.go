@@ -1,6 +1,7 @@
 package main
 
 import (
+	"3d_led_cube_adapter/lib/util"
 	"flag"
 	"fmt"
 	"math"
@@ -14,7 +15,8 @@ const LedCubeWidth = 16
 const LedCubeHeight = 32
 const LedCubeDepth = 8
 
-const LedCylinderWidth = 30
+const LedCylinderDiameter = 30
+const LedCylinderRadius = LedCylinderDiameter / 2
 const LedCylinderHeight = 100
 const LedCylinderCount = 60
 
@@ -26,45 +28,43 @@ func rgb565to888(c565 uint32) []byte {
 }
 
 func makeSudare(cube []byte) []byte {
-	sudareBuf := make([]byte, 360000)
+	sudareBuf := make([]byte, LedCylinderRadius*LedCylinderHeight*LedCylinderCount*2)
 
 	offsetCubeX := LedCubeWidth / 2.0
 	offsetCubeZ := LedCubeDepth / 2.0
 
-	cylinderUnitDegree := math.Pi / LedCylinderCount
+	cylinderUnitDegree := (2 * math.Pi) / LedCylinderCount
 
-	xscale := float64(LedCubeWidth) / float64(LedCylinderWidth)
+	xscale := float64(LedCubeWidth) / float64(LedCylinderDiameter)
 	yscale := float64(LedCubeHeight) / float64(LedCylinderHeight)
 
-	for cylinder := 0; cylinder < LedCylinderCount; cylinder++ {
+	util.ConcurrentEnum(0, LedCylinderCount, func(cylinder int) {
 		sin := math.Sin(cylinderUnitDegree * float64(cylinder))
 		cos := math.Cos(cylinderUnitDegree * float64(cylinder))
 
-		for r := 0; r < LedCylinderWidth; r++ {
-			cubex := int(math.Round(offsetCubeX + cos*float64(r-(LedCylinderWidth/2))*xscale))
-			cubez := int(math.Round(offsetCubeZ + sin*float64(r-(LedCylinderWidth/2))*xscale))
-			for y := LedCylinderHeight - 1; 0 <= y; y-- {
-				cubey := int(math.Round(float64(y) * yscale))
+		for r := 0; r < LedCylinderRadius; r++ {
+			cubex := int(math.Round(offsetCubeX + cos*float64(r)*xscale))
+			cubez := int(math.Round(offsetCubeZ + sin*float64(r)*xscale))
+			for y := 0; y < LedCylinderHeight; y++ {
+				cubey := (LedCubeHeight - 1) - int(math.Round(float64(y)*yscale))
 
 				if cubex >= 0 && cubey >= 0 && cubez >= 0 &&
 					cubex < LedCubeWidth && cubez < LedCubeDepth && cubey < LedCubeHeight {
-					idxS := ((LedCylinderHeight * LedCylinderWidth * cylinder) +
-						(LedCylinderWidth * y) +
+					idxS := ((LedCylinderHeight * LedCylinderRadius * cylinder) +
+						(LedCylinderRadius * y) +
 						r) * 2
 
 					idxC := (cubez + cubey*LedCubeDepth + cubex*LedCubeHeight*LedCubeDepth) * 2
 					sudareBuf[idxS] = cube[idxC]
 					sudareBuf[idxS+1] = cube[idxC+1]
-
 				}
 			}
 		}
-	}
+	})
 	return sudareBuf
 }
 
 var (
-	port         = flag.String("p", ":2345", "http service port")
 	logVerbose   = flag.Bool("v", false, "output detailed log.")
 	optInputPort = flag.String("r", "127.0.0.1:5563", "Specify IP and port of server main_realsense_serivce.py running.")
 )
