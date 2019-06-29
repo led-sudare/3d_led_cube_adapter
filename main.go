@@ -66,14 +66,14 @@ func makeSudare(cube []byte) []byte {
 
 var (
 	logVerbose   = flag.Bool("v", false, "output detailed log.")
-	optInputPort = flag.String("r", "127.0.0.1:5563", "Specify IP and port of server main_realsense_serivce.py running.")
+	optInputPort = flag.String("r", "0.0.0.0:5563", "Specify IP and port of server main_realsense_serivce.py running.")
 )
 
 func main() {
 	flag.Parse()
 
-	fmt.Println("Server is Running at localhost:9001")
-	conn, _ := net.ListenPacket("udp", "localhost:9001")
+	fmt.Println("Server is Running at 0.0.0.0:9001")
+	conn, _ := net.ListenPacket("udp", "0.0.0.0:9001")
 	defer conn.Close()
 
 	endpoint := "tcp://" + *optInputPort
