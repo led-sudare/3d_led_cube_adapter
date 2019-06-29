@@ -11,9 +11,8 @@ RUN apk update && \
     libsodium
 
 ENV GO111MODULE=on
-EXPOSE 9001 5563
-
-RUN mkdir /go/src/3d_led_cube_adapter
-WORKDIR /go/src/3d_led_cube_adapter
+EXPOSE 9001
+ARG cname
+WORKDIR /go/src/${cname}
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

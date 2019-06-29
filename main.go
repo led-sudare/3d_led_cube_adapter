@@ -64,12 +64,24 @@ func makeSudare(cube []byte) []byte {
 	return sudareBuf
 }
 
-var (
-	logVerbose   = flag.Bool("v", false, "output detailed log.")
-	optInputPort = flag.String("r", "0.0.0.0:5563", "Specify IP and port of server main_realsense_serivce.py running.")
-)
+type Configs struct {
+	ZmqTarget string `json:"zmqTarget"`
+}
+
+func NewConfigs() Configs {
+	return Configs{
+		ZmqTarget: "0.0.0.0:5510",
+	}
+}
 
 func main() {
+	configs := NewConfigs()
+	util.ReadConfig(&configs)
+
+	var (
+		optInputPort = flag.String("r", configs.ZmqTarget, "Specify IP and port of server zeromq SUB running.")
+	)
+
 	flag.Parse()
 
 	fmt.Println("Server is Running at 0.0.0.0:9001")
@@ -77,11 +89,8 @@ func main() {
 	defer conn.Close()
 
 	endpoint := "tcp://" + *optInputPort
-	zmqsock, err := zmq.NewPub(endpoint)
-	if err != nil {
-		panic(err)
-	}
-	err = zmqsock.Connect(endpoint)
+	zmqsock := zmq.NewSock(zmq.Pub)
+	err := zmqsock.Connect(endpoint)
 	if err != nil {
 		panic(err)
 	}

@@ -1,2 +1,3 @@
 #!/bin/sh
-docker restart 3d_led_cube_adapter
+cname=`cat ./cname`
+docker restart $cname

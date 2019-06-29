@@ -1,0 +1,5 @@
+{
+    "//comment": "zeroMq PUB.",
+    "zmqTarget": "192.168.1.12:5510",
+    "//zmqTarget": "0.0.0.0:5510"
+}
