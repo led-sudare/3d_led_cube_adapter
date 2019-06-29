@@ -16,4 +16,4 @@ LEDすだれに送信する
 # Configuration
 
 ## goのソースコードを変更の反映したい場合
-1. simulatorのDockerコンテナを再起動する
+1. 3d_led_cube_adapterのDockerコンテナを再起動する
