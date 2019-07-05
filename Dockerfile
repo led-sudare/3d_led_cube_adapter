@@ -11,7 +11,7 @@ RUN apk update && \
     libsodium
 
 ENV GO111MODULE=on
-EXPOSE 9001
+EXPOSE 5520
 ARG cname
 WORKDIR /go/src/${cname}
 
