@@ -4,6 +4,7 @@ import (
 	"3d_led_cube_adapter/lib"
 	"3d_led_cube_adapter/lib/util"
 	"flag"
+	"time"
 
 	log "github.com/cihub/seelog"
 	zmq "github.com/zeromq/goczmq"
@@ -48,13 +49,23 @@ func main() {
 	log.Infof("Start ZMQ Pub %v", endpoint)
 	defer zmqPubSock.Destroy()
 
+	ticker := util.NewInlineTicker(2 * time.Second)
+
 	for {
 		buffer, _, err := zmqSubSock.RecvFrame()
 		if err != nil {
 			continue
 		}
 		converter := lib.NewLedCubeConverter(len(buffer))
-		log.Infof("Received : %v\n", len(buffer))
+		if converter == nil {
+			ticker.DoIfFire(func() {
+				log.Warn("Invalid datalength ", len(buffer))
+			})
+			continue
+		}
+		ticker.DoIfFire(func() {
+			log.Infof("Received last data len: %v", len(buffer))
+		})
 
 		if sudareData := converter.ConvertToSudare(buffer); sudareData != nil {
 			zmqPubSock.SendFrame(sudareData, zmq.FlagNone)

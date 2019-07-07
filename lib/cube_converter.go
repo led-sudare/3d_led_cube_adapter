@@ -31,7 +31,14 @@ type ledCubeConverter struct {
 }
 
 func NewLedCubeConverter(dataLength int) CubeConverter {
-	return &ledCubeConverter{16, 32, 8, 8192}
+	switch dataLength {
+	case 8192:
+		return &ledCubeConverter{16, 32, 8, 8192}
+	case 22500:
+		return &ledCubeConverter{15, 50, 15, 22500}
+	default:
+		return nil
+	}
 }
 
 func (c *ledCubeConverter) GetCubeWidth() int {
