@@ -12,7 +12,7 @@
 *.out
 
 .vscode
-3d_led_cube_adapter
+cube_adapter
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

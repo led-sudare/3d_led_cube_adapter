@@ -1,8 +1,8 @@
 package main
 
 import (
-	"3d_led_cube_adapter/lib"
-	"3d_led_cube_adapter/lib/util"
+	"cube_adapter/lib"
+	"cube_adapter/lib/util"
 	"flag"
 	"time"
 
@@ -11,12 +11,12 @@ import (
 )
 
 type Configs struct {
-	ZmqTarget string `json:"zmqTarget"`
+	XProxySubBind string `json:"XProxySubBind"`
 }
 
 func NewConfigs() Configs {
 	return Configs{
-		ZmqTarget: "0.0.0.0:5510",
+		XProxySubBind: "0.0.0.0:5510",
 	}
 }
 
@@ -25,7 +25,7 @@ func main() {
 	util.ReadConfig(&configs)
 
 	var (
-		optInputPort = flag.String("r", configs.ZmqTarget, "Specify IP and port of server zeromq SUB running.")
+		xproxySubBind = flag.String("r", configs.XProxySubBind, "Specify IP and port of server zeromq SUB running.")
 	)
 
 	flag.Parse()
@@ -40,7 +40,7 @@ func main() {
 	log.Infof("Start ZMQ Sub tcp://*:5520")
 	defer zmqSubSock.Destroy()
 
-	endpoint := "tcp://" + *optInputPort
+	endpoint := "tcp://" + *xproxySubBind
 	zmqPubSock := zmq.NewSock(zmq.Pub)
 	err = zmqPubSock.Connect(endpoint)
 	if err != nil {

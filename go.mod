@@ -1,4 +1,4 @@
-module 3d_led_cube_adapter
+module cube_adapter
 
 go 1.12
 

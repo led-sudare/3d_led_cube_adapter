@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"3d_led_cube_adapter/lib/util"
+	"cube_adapter/lib/util"
 	"math"
 
 	log "github.com/cihub/seelog"
