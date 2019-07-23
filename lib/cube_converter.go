@@ -30,12 +30,21 @@ type ledCubeConverter struct {
 	width, height, depth, datalen int
 }
 
+var ledConverter8192 CubeConverter
+var ledConverter22500 CubeConverter
+
 func NewLedCubeConverter(dataLength int) CubeConverter {
 	switch dataLength {
 	case 8192:
-		return &ledCubeConverter{16, 32, 8, 8192}
+		if ledConverter8192 == nil {
+			ledConverter8192 = &ledCubeConverter{16, 32, 8, 8192}
+		}
+		return ledConverter8192
 	case 22500:
-		return &ledCubeConverter{15, 50, 15, 22500}
+		if ledConverter22500 == nil {
+			ledConverter22500 = &ledCubeConverter{15, 50, 15, 22500}
+		}
+		return ledConverter22500
 	default:
 		return nil
 	}
@@ -82,9 +91,7 @@ func (c *ledCubeConverter) ConvertToSudare(cube []byte) []byte {
 
 				if cubex >= 0 && cubey >= 0 && cubez >= 0 &&
 					cubex < c.width && cubez < c.depth && cubey < c.height {
-					idxS := ((LedCylinderHeight * LedCylinderRadius * cylinder) +
-						(LedCylinderRadius * y) +
-						r) * 2
+					idxS := ((LedCylinderRadius*cylinder+r)*LedCylinderHeight + y) * 2
 
 					idxC := (cubez + cubey*c.depth + cubex*c.height*c.depth) * 2
 					sudareBuf[idxS] = cube[idxC]
