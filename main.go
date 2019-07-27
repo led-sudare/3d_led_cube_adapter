@@ -4,6 +4,7 @@ import (
 	"cube_adapter/lib"
 	"cube_adapter/lib/util"
 	"flag"
+	"net"
 	"time"
 
 	log "github.com/cihub/seelog"
@@ -30,6 +31,7 @@ func main() {
 
 	flag.Parse()
 
+	// ZMQ Endpoint
 	zmqSubSock := zmq.NewSock(zmq.Sub)
 	zmqSubSock.SetSubscribe("")
 
@@ -40,6 +42,7 @@ func main() {
 	log.Infof("Start ZMQ Sub tcp://*:5520")
 	defer zmqSubSock.Destroy()
 
+	// ZMQ Endpoint
 	endpoint := "tcp://" + *xproxySubBind
 	zmqPubSock := zmq.NewSock(zmq.Pub)
 	err = zmqPubSock.Connect(endpoint)
@@ -49,13 +52,43 @@ func main() {
 	log.Infof("Start ZMQ Pub %v", endpoint)
 	defer zmqPubSock.Destroy()
 
+	chBuffer := make(chan []byte)
+
+	go func() {
+		for {
+			buffer, _, err := zmqSubSock.RecvFrame()
+			if err != nil {
+				continue
+			}
+			chBuffer <- buffer
+		}
+	}()
+
+	// UDP Endpoint
+	udp, err := net.ListenPacket("udp", "localhost:9001")
+	if err != nil {
+		panic(err)
+	}
+	log.Infof("Start UDP")
+	defer udp.Close()
+
+	go func() {
+	 	buffer := make([]byte, 8192)
+		for {
+			_, _, err := udp.ReadFrom(buffer)
+			log.Info("REad")
+			if err != nil {
+				continue
+			}
+			chBuffer <- buffer
+		}
+	}()
+
 	ticker := util.NewInlineTicker(2 * time.Second)
 
 	for {
-		buffer, _, err := zmqSubSock.RecvFrame()
-		if err != nil {
-			continue
-		}
+		buffer := <-chBuffer
+
 		converter := lib.NewLedCubeConverter(len(buffer))
 		if converter == nil {
 			ticker.DoIfFire(func() {

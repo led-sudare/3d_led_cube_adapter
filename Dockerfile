@@ -11,7 +11,7 @@ RUN apk update && \
     libsodium
 
 ENV GO111MODULE=on
-EXPOSE 5520
+EXPOSE 5520 9001
 WORKDIR /work/
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
